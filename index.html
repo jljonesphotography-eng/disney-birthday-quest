@@ -1,675 +1,1365 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Disney Birthday Explorer Quest</title>
-  <style>
-    :root{
-      --bg:#0b1020;
-      --panel:#121a33;
-      --panel2:#0f1730;
-      --text:#eef2ff;
-      --muted:#b7c0ffcc;
-      --accent:#7dd3fc;
-      --accent2:#a78bfa;
-      --good:#86efac;
-      --warn:#fbbf24;
-      --bad:#fb7185;
-      --line:#ffffff1a;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: radial-gradient(1200px 600px at 30% 0%, #1a2b66 0%, var(--bg) 55%) fixed;
-      color:var(--text);
-      line-height:1.25;
-    }
-    header{
-      padding:18px 16px 12px;
-      position:sticky; top:0;
-      backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(11,16,32,.92), rgba(11,16,32,.55));
-      border-bottom:1px solid var(--line);
-      z-index:10;
-    }
-    h1{font-size:18px; margin:0 0 6px}
-    .sub{font-size:13px; color:var(--muted); margin:0}
-    .wrap{max-width:980px; margin:0 auto; padding:14px 12px 40px}
-    .row{display:grid; gap:12px}
-    @media(min-width:860px){ .row{grid-template-columns: 1.1fr .9fr} }
-    .card{
-      background: linear-gradient(180deg, rgba(18,26,51,.92), rgba(15,23,48,.92));
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow: var(--shadow);
-      padding:14px;
-    }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px; border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted); font-size:12px;
-    }
-    .pill strong{color:var(--text)}
-    .btn{
-      appearance:none; border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      cursor:pointer;
-      font-weight:650;
-      font-size:13px;
-      transition: transform .06s ease, background .12s ease;
-      user-select:none;
-    }
-    .btn:active{transform: scale(.99)}
-    .btn.primary{background: linear-gradient(135deg, rgba(125,211,252,.20), rgba(167,139,250,.18)); border-color: rgba(125,211,252,.35)}
-    .btn.good{background: rgba(134,239,172,.12); border-color: rgba(134,239,172,.35)}
-    .btn.warn{background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.35)}
-    .btn.bad{background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.35)}
-    .btn.small{padding:7px 10px; border-radius:12px; font-size:12px}
-    .btnrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
-    .divider{height:1px; background:var(--line); margin:12px 0}
-    .kicker{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; margin:0 0 8px}
-    .desc{font-size:13px; color:var(--muted); margin:8px 0 0}
-    .list{display:grid; gap:10px; margin-top:10px}
-    .node{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      background: rgba(255,255,255,.04);
-      position:relative;
-      overflow:hidden;
-    }
-    .node::after{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(500px 150px at 15% 0%, rgba(125,211,252,.12), transparent 60%);
-      pointer-events:none;
-    }
-    .node h3{margin:0; font-size:14px}
-    .meta{margin-top:6px; font-size:12px; color:var(--muted); display:flex; flex-wrap:wrap; gap:10px}
-    .tag{padding:3px 8px; border-radius:999px; background: rgba(255,255,255,.06); border:1px solid var(--line)}
-    .progress{
-      width:100%;
-      height:10px;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .bar{
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, rgba(125,211,252,.75), rgba(167,139,250,.75));
-    }
-    .smallnote{font-size:12px; color:var(--muted); margin-top:8px}
-    .planItem{
-      display:flex; gap:10px; align-items:flex-start;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      border-radius:16px;
-      padding:10px;
-    }
-    .check{
-      width:26px; height:26px; border-radius:10px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.05);
-      cursor:pointer;
-      display:grid; place-items:center;
-      flex:0 0 auto;
-      margin-top:2px;
-    }
-    .planMain{flex:1}
-    .pmTitle{display:flex; align-items:center; justify-content:space-between; gap:8px}
-    .pmTitle strong{font-size:13px}
-    .pmTitle span{font-size:12px; color:var(--muted)}
-    .pmBody{font-size:12px; color:var(--muted); margin-top:6px}
-    .done .pmTitle strong{color: rgba(134,239,172,.95); text-decoration: line-through}
-    .done{opacity:.85}
-    .toast{
-      position:fixed; left:50%; transform:translateX(-50%);
-      bottom:16px;
-      background: rgba(18,26,51,.95);
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: 999px;
-      padding:10px 14px;
-      font-size:13px;
-      color:var(--text);
-      display:none;
-      z-index:20;
-    }
-    details{border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,.10); padding:8px 10px}
-    summary{cursor:pointer; font-weight:700; font-size:13px}
-    details p{margin:8px 0 0; color:var(--muted); font-size:13px}
-    .lock{
-      border:1px dashed rgba(255,255,255,.22);
-      border-radius:14px;
-      padding:10px;
-      background: rgba(255,255,255,.03);
-      color:var(--muted);
-      font-size:13px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    .lock strong{color:var(--text)}
-    .waitGrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-    @media(max-width:520px){ .waitGrid{grid-template-columns:1fr} }
-    input[type="number"]{
-      width:100%;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.05);
-      color:var(--text);
-      font-size:14px;
-      outline:none;
-    }
-    label{font-size:12px; color:var(--muted)}
-    .recBox{
-      margin-top:10px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:10px;
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:13px;
-    }
-    .recBox strong{color:var(--text)}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Birthday Captain's Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #F5C842;
+    --deep-gold: #C89B1A;
+    --parchment: #F7EDD8;
+    --dark-parchment: #E8D8B5;
+    --ink: #1C1208;
+    --red: #9B2020;
+    --teal: #1A5F6E;
+    --bg: #0D0A05;
+    --card-bg: #FBF3E0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  /* iPhone touch fixes */
+  button, [onclick] {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body {
+    font-family: 'Lora', serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Star field */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(245,200,66,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 25%, rgba(245,200,66,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 60%, rgba(245,200,66,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(245,200,66,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, rgba(245,200,66,0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 60% 10%, rgba(245,200,66,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 30% 50%, rgba(245,200,66,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 40px 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(180deg, #1C0F00 0%, #2A1800 60%, #0D0A05 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 32px 20px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: '✦ ✦ ✦';
+    display: block;
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 12px;
+    margin-top: 10px;
+    opacity: 0.6;
+  }
+
+  .crown-emoji {
+    font-size: 40px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+    margin-bottom: 6px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .header h1 {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 22px;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(245,200,66,0.4);
+    line-height: 1.3;
+  }
+
+  .header .subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #C89B1A;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  .captain-badge {
+    display: inline-block;
+    margin-top: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--deep-gold));
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+
+  /* ── PARK TABS ── */
+  .park-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: #150E02;
+    border-bottom: 2px solid var(--deep-gold);
+  }
+
+  .park-tab {
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #8A7040;
+    text-transform: uppercase;
+    transition: all 0.3s;
+    border: none;
+    background: transparent;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(245,200,66,0.2);
+    min-height: 56px;
+    width: 100%;
+  }
+
+  .park-tab.active {
+    color: var(--gold);
+    background: rgba(245,200,66,0.07);
+    border-bottom: 3px solid var(--gold);
+  }
+
+  .park-tab .park-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--deep-gold);
+    padding: 20px 20px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before,
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--deep-gold), transparent);
+    opacity: 0.4;
+  }
+
+  /* ── QUEST MAP ── */
+  .quest-map {
+    margin: 0 16px;
+    background: linear-gradient(160deg, #1E1408 0%, #0D0A05 100%);
+    border: 1px solid rgba(245,200,66,0.25);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quest-map::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F5C842' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .map-path {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .map-stop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: all 0.3s;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: 1px solid transparent;
+    -webkit-tap-highlight-color: rgba(245,200,66,0.1);
+  }
+
+  .map-stop.completed {
+    background: rgba(245,200,66,0.06);
+    border-color: rgba(245,200,66,0.15);
+  }
+
+  .map-stop.current {
+    background: rgba(245,200,66,0.12);
+    border-color: rgba(245,200,66,0.4);
+    box-shadow: 0 0 12px rgba(245,200,66,0.1);
+  }
+
+  .map-stop.locked {
+    opacity: 0.35;
+  }
+
+  .stop-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    border: 2px solid rgba(245,200,66,0.3);
+  }
+
+  .map-stop.completed .stop-icon { background: rgba(245,200,66,0.15); border-color: var(--gold); }
+  .map-stop.current .stop-icon { background: rgba(245,200,66,0.25); border-color: var(--gold); animation: pulse 2s infinite; }
+  .map-stop.locked .stop-icon { background: rgba(255,255,255,0.03); }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,200,66,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(245,200,66,0); }
+  }
+
+  .stop-info { flex: 1; }
+
+  .stop-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .stop-desc {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    color: #8A7040;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .stop-status {
+    font-size: 14px;
+  }
+
+  .connector {
+    width: 2px;
+    height: 12px;
+    background: linear-gradient(180deg, rgba(245,200,66,0.3), rgba(245,200,66,0.1));
+    margin-left: 29px;
+  }
+
+  /* ── MISSION CARDS ── */
+  .cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 16px;
+  }
+
+  .mission-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 1px 0 rgba(245,200,66,0.2);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .mission-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.5); }
+
+  .card-stripe {
+    height: 5px;
+  }
+
+  .stripe-hs { background: linear-gradient(90deg, #9B2020, #C84040); }
+  .stripe-mk { background: linear-gradient(90deg, #1A3D8F, #2B5FD1); }
+  .stripe-snack { background: linear-gradient(90deg, #2E7D32, #4CAF50); }
+  .stripe-bonus { background: linear-gradient(90deg, #6A1B9A, #AB47BC); }
+
+  .card-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .card-emoji {
+    font-size: 28px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .card-meta { flex: 1; }
+
+  .card-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+
+  .tag-hs { background: #9B2020; color: #FFF5F5; }
+  .tag-mk { background: #1A3D8F; color: #EEF2FF; }
+  .tag-snack { background: #2E7D32; color: #F1F8E9; }
+  .tag-bonus { background: #6A1B9A; color: #F3E5F5; }
+
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .card-location {
+    font-size: 11px;
+    color: #6B5B3A;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .card-lock {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .card-body {
+    padding: 0 16px 16px;
+    display: none;
+  }
+
+  .card-body.open { display: block; }
+
+  .card-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--dark-parchment), transparent);
+    margin-bottom: 12px;
+  }
+
+  .mission-section {
+    margin-bottom: 12px;
+  }
+
+  .mission-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8A7040;
+    margin-bottom: 4px;
+  }
+
+  .mission-text {
+    font-size: 13px;
+    color: #2C1F0A;
+    line-height: 1.6;
+  }
+
+  .challenge-box {
+    background: linear-gradient(135deg, #FFF8E7, #F5EDD0);
+    border: 1px solid #D4B96A;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .challenge-box .mission-label { color: var(--red); }
+
+  .branch-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .branch-btn {
+    background: linear-gradient(135deg, #1C1208, #2A1800);
+    color: var(--gold);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(245,200,66,0.2);
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .branch-btn:hover {
+    background: rgba(245,200,66,0.15);
+    border-color: var(--gold);
+  }
+
+  .branch-btn .arrow { opacity: 0.5; margin-right: 6px; }
+
+  /* Reset points */
+  .reset-strip {
+    margin: 0 16px;
+    background: linear-gradient(135deg, #0A1F26, #0D2B35);
+    border: 1px solid rgba(26,95,110,0.5);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .reset-strip .icon { font-size: 28px; }
+
+  .reset-strip h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: #4ECDC4;
+    margin-bottom: 2px;
+  }
+
+  .reset-strip p {
+    font-size: 11px;
+    color: #5A8A92;
+    font-style: italic;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-section {
+    margin: 8px 16px 0;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: #8A7040;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: rgba(245,200,66,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--deep-gold), var(--gold));
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.8s ease;
+  }
+
+  /* ── TABS ── */
+  .nav-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #100C02;
+    border-bottom: 1px solid rgba(245,200,66,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-tab {
+    padding: 12px 4px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #5A4820;
+    text-transform: uppercase;
+    border: none;
+    background: transparent;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(245,200,66,0.2);
+    min-height: 52px;
+    width: 100%;
+  }
+
+  .nav-tab .tab-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  .nav-tab.active { color: var(--gold); background: rgba(245,200,66,0.06); }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── HIDDEN DETAIL CARDS (Bonus) ── */
+  .bonus-card {
+    background: linear-gradient(135deg, #160D2A, #1E0F38);
+    border: 1px solid rgba(171,71,188,0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0 16px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bonus-card::before {
+    content: '✨';
+    position: absolute;
+    top: -10px; right: -10px;
+    font-size: 60px;
+    opacity: 0.05;
+  }
+
+  .bonus-card h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #CE93D8;
+    margin-bottom: 6px;
+  }
+
+  .bonus-card .bonus-location {
+    font-size: 10px;
+    color: #8E5FAA;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .bonus-card p {
+    font-size: 12px;
+    color: #C5A9D5;
+    line-height: 1.6;
+  }
+
+  /* ── INTRO SCREEN ── */
+  .intro-screen {
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .scroll-parchment {
+    background: linear-gradient(160deg, var(--parchment), var(--dark-parchment));
+    border-radius: 12px;
+    padding: 24px 20px;
+    border: 2px solid var(--deep-gold);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 40px rgba(200,155,26,0.1);
+    position: relative;
+  }
+
+  .scroll-parchment::before,
+  .scroll-parchment::after {
+    content: '';
+    display: block;
+    height: 16px;
+    background: linear-gradient(90deg, var(--deep-gold), #E8C460, var(--deep-gold));
+    border-radius: 4px;
+    margin: -24px -20px 20px;
+  }
+  .scroll-parchment::after {
+    margin: 20px -20px -24px;
+  }
+
+  .scroll-title {
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .scroll-text {
+    font-size: 13px;
+    color: #3A2810;
+    line-height: 1.8;
+    text-align: left;
+  }
+
+  .scroll-text em { font-style: italic; color: var(--red); }
+
+  .seal {
+    font-size: 40px;
+    display: block;
+    margin: 16px auto 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+
+  .begin-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #C89B1A, #F5C842);
+    color: var(--ink);
+    border: none;
+    border-radius: 10px;
+    padding: 18px;
+    font-family: 'Cinzel Decorative', cursive;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(245,200,66,0.3);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 56px;
+  }
+
+  .begin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,200,66,0.4); }
+
+  /* hide intro once started */
+  .hidden { display: none !important; }
+
+  /* wait time badge */
+  .flex-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="wrap" style="padding:0 12px">
-      <h1>🎂 Disney Birthday Explorer Quest</h1>
-      <p class="sub">Captain = birthday girl. Tap missions to add them to Today Plan. Use wait times to pick “Now” vs “Checkpoint,” then choose what unlocks next.</p>
-      <div class="btnrow">
-        <button class="btn primary small" id="btnCaptain">🔐 Captain mode: OFF</button>
-        <button class="btn small" id="btnReset">↩︎ Reset day</button>
-        <button class="btn small" id="btnShare">📱 Copy share text</button>
+<div class="app">
+
+  <!-- INTRO -->
+  <div id="introScreen" class="intro-screen">
+    <div class="scroll-parchment">
+      <div class="scroll-title">A Message for the Birthday Captain</div>
+      <div class="scroll-text">
+        <p>You hold in your hands the <em>Official Quest Scroll</em> — a sacred document entrusted only to those born for adventure.</p>
+        <br>
+        <p>Your mission, should you choose to accept it: lead your crew through two legendary kingdoms, unlocking secrets, claiming snacks, and completing challenges that only a true Captain could navigate.</p>
+        <br>
+        <p>The Quest is already written. The path is already set. <em>No detours. No rewrites. The scroll has spoken.</em></p>
+        <br>
+        <p>Reveal each mission only when the crew is ready. The Captain chooses what comes next.</p>
       </div>
-      <div style="margin-top:10px">
-        <div class="progress"><div class="bar" id="bar"></div></div>
-        <div class="smallnote" id="progText">0% complete</div>
-      </div>
+      <span class="seal">⚜️</span>
     </div>
-  </header>
-
-  <div class="wrap">
-    <div class="row">
-      <section class="card">
-        <div class="pill"><strong>Quest Map</strong> <span>Tap → add to Today Plan</span></div>
-        <p class="desc">This map is the “always-in-place” structure. The Captain unlocks mission details and controls what comes next.</p>
-
-        <div class="divider"></div>
-        <p class="kicker">Hollywood Studios</p>
-        <div class="list" id="mapHS"></div>
-
-        <div class="divider"></div>
-        <p class="kicker">Park Hop</p>
-        <div class="node" id="nodeHop"></div>
-
-        <div class="divider"></div>
-        <p class="kicker">Magic Kingdom</p>
-        <div class="list" id="mapMK"></div>
-
-        <div class="divider"></div>
-        <p class="kicker">Snack & Bathroom Checkpoints</p>
-        <div class="list" id="mapSnacks"></div>
-
-        <p class="smallnote">Structure trick: after every 2 rides, run a “Checkpoint” (bathroom + quick snack). It prevents random stops.</p>
-      </section>
-
-      <aside class="card">
-        <div class="pill"><strong>Today Plan</strong> <span>Tap “Choose next” to unlock the next step</span></div>
-        <p class="desc">Build the day live from ride times. When you finish an item, choose what it unlocks next.</p>
-
-        <div class="divider"></div>
-
-        <div class="waitGrid" id="waitInputs"></div>
-        <div class="recBox" id="reco">Tip: enter current waits. If a key ride is long, do a Checkpoint mission, then try again.</div>
-
-        <div class="divider"></div>
-
-        <div class="lock" id="lockBox">
-          <div>🗝️ Mission details are <strong>locked</strong> (Captain mode is OFF).</div>
-          <button class="btn primary small" id="btnCaptain2">Turn ON</button>
-        </div>
-
-        <div class="divider"></div>
-
-        <div id="planList" class="list"></div>
-        <div class="smallnote">Captain tip: keep the plan to ~6–8 items so it stays breezy.</div>
-      </aside>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <div class="pill"><strong>Secret Missions</strong> <span>Use when delays happen</span></div>
-      <div class="list" style="margin-top:10px">
-        <div class="node">
-          <h3>🔐 Secret Mission: Hidden Mickey Rush</h3>
-          <p class="desc">While waiting (food/bathroom), find <strong>3 Hidden Mickeys</strong> nearby. When found → Captain unlocks next step.</p>
-        </div>
-        <div class="node">
-          <h3>🔐 Secret Mission: Queue Artifact Hunt</h3>
-          <p class="desc">In any long line, find the <strong>best story prop</strong> (tool, crate, sign, old-looking object). Vote for the winner.</p>
-        </div>
-        <div class="node">
-          <h3>🔐 Secret Mission: Nostalgia Snapshot</h3>
-          <p class="desc">Take a subtle “classic Disney” photo recreation. Winner earns 1 point and helps pick the next snack checkpoint.</p>
-        </div>
-      </div>
-    </div>
+    <button class="begin-btn" onclick="beginQuest()">⚔️ Begin the Quest</button>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <!-- MAIN APP (hidden until begin) -->
+  <div id="mainApp" class="hidden">
+
+    <div class="header">
+      <span class="crown-emoji">👑</span>
+      <h1>The Birthday<br>Captain's Quest</h1>
+      <div class="subtitle">Hollywood Studios → Magic Kingdom</div>
+      <span class="captain-badge">⚔️ Captain of the Quest</span>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('map')">
+        <span class="tab-icon">🗺️</span>Quest Map
+      </button>
+      <button class="nav-tab" onclick="showTab('missions')">
+        <span class="tab-icon">📜</span>Missions
+      </button>
+      <button class="nav-tab" onclick="showTab('snacks')">
+        <span class="tab-icon">🍟</span>Snacks
+      </button>
+      <button class="nav-tab" onclick="showTab('secrets')">
+        <span class="tab-icon">✨</span>Secrets
+      </button>
+    </div>
+
+    <!-- MAP PANEL -->
+    <div id="tab-map" class="panel active">
+      <div class="section-label">Quest Map</div>
+
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Quest Progress</span>
+          <span id="progressText">0 / 9 Missions</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="section-label">Hollywood Studios</div>
+      <div class="quest-map">
+        <div class="map-path">
+          <div class="map-stop current">
+            <div class="stop-icon">🎬</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 1 — The Drop</div>
+              <div class="stop-desc">Tower of Terror • Hollywood Blvd</div>
+            </div>
+            <div class="stop-status">📍</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🐕</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 2 — The Launch</div>
+              <div class="stop-desc">Slinky Dog Dash • Toy Story Land</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🍟</div>
+            <div class="stop-info">
+              <div class="stop-name">Snack Stop I</div>
+              <div class="stop-desc">Woody's Lunch Box • Toy Story Land</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🚀</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 3 — The Kessel Run</div>
+              <div class="stop-desc">Millennium Falcon • Galaxy's Edge</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🌍</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 4 — The Jump</div>
+              <div class="stop-desc">Star Tours • Echo Lake</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Magic Kingdom</div>
+      <div class="quest-map">
+        <div class="map-path">
+          <div class="map-stop locked">
+            <div class="stop-icon">⛏️</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 5 — The Mine</div>
+              <div class="stop-desc">Big Thunder Mountain • Frontierland</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">💎</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 6 — The Gem</div>
+              <div class="stop-desc">Seven Dwarfs Mine Train • Fantasyland</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🌭</div>
+            <div class="stop-info">
+              <div class="stop-name">Snack Stop II</div>
+              <div class="stop-desc">Casey's Corner • Main Street</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🌌</div>
+            <div class="stop-info">
+              <div class="stop-name">Mission 7 — The Void</div>
+              <div class="stop-desc">Space Mountain • Tomorrowland</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+          <div class="connector"></div>
+          <div class="map-stop locked">
+            <div class="stop-icon">🍦</div>
+            <div class="stop-info">
+              <div class="stop-name">Final Snack Stop</div>
+              <div class="stop-desc">Auntie Gravity's • Tomorrowland</div>
+            </div>
+            <div class="stop-status">🔒</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin: 16px;">
+        <div class="reset-strip">
+          <div class="icon">🚿</div>
+          <div>
+            <h4>Reset Points</h4>
+            <p>Between every 2 missions — no questions asked. The Captain calls it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MISSIONS PANEL -->
+    <div id="tab-missions" class="panel">
+
+      <div class="park-tabs">
+        <button class="park-tab active" onclick="showPark('hs', this)">
+          <span class="park-icon">🎬</span>Hollywood Studios
+        </button>
+        <button class="park-tab" onclick="showPark('mk', this)">
+          <span class="park-icon">🏰</span>Magic Kingdom
+        </button>
+      </div>
+
+      <!-- HS MISSIONS -->
+      <div id="park-hs">
+        <div class="section-label">Hollywood Studios</div>
+        <div class="cards-grid">
+
+          <!-- M1 Tower of Terror -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-hs"></div>
+            <div class="card-header">
+              <div class="card-emoji">🗼</div>
+              <div class="card-meta">
+                <span class="card-tag tag-hs">Mission 1</span>
+                <div class="card-title">The Drop</div>
+                <div class="card-location">📍 Tower of Terror — Hollywood Boulevard</div>
+              </div>
+              <div class="card-lock">🔓</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">Before you enter, find the faded sign near the entrance that reads "Hollywood Tower Hotel." What year does it say the hotel was opened? Show the Captain. 📸</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">Look at the dust and dead plants in the lobby — they're not fake. They were styled to look frozen in time since the hotel's "accident."</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">During the drop, keep your hands raised the entire time. Anyone who does it earns a point on the Quest Scoreboard.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🗺️ Where next?</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Short wait? Go straight to Slinky Dog</button>
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Long wait? Head to Galaxy's Edge first</button>
+              </div>
+              <div class="flex-badge">⏱️ Quest adapts to wait times — Captain decides</div>
+            </div>
+          </div>
+
+          <!-- M2 Slinky Dog -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-hs"></div>
+            <div class="card-header">
+              <div class="card-emoji">🐕</div>
+              <div class="card-meta">
+                <span class="card-tag tag-hs">Mission 2</span>
+                <div class="card-title">The Launch</div>
+                <div class="card-location">📍 Slinky Dog Dash — Toy Story Land</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">The entire land is designed from Andy's perspective — as if you're the size of a toy. Find something in the queue or land that proves this (a giant Tinkertoy, oversized domino, etc.) and point it out to the Captain.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">The giant crayons in Toy Story Land are the exact Crayola colors from the original 64-count box. See if you can name one before you get on.</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">Pick someone in your crew to wave at every single person watching from the sidelines during the ride. Natural smiles only.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🗺️ Where next?</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Claim Snack Stop I at Woody's Lunch Box</button>
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Head straight to Millennium Falcon</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- M3 Millennium Falcon -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-hs"></div>
+            <div class="card-header">
+              <div class="card-emoji">🚀</div>
+              <div class="card-meta">
+                <span class="card-tag tag-hs">Mission 3</span>
+                <div class="card-title">The Kessel Run</div>
+                <div class="card-location">📍 Millennium Falcon: Smugglers Run — Galaxy's Edge</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">Before entering, find the Millennium Falcon sitting outside. Look for the famous "12 parsec" reference somewhere on or near the ship — a hidden marking, a cast member comment, or in the queue. The Captain must approve your find.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">The Oga's Cantina nearby plays alien music. One of the "alien DJs" is actually a repurposed animatronic from a retired ride. (It's RX-24, the Star Tours pilot from the original ride.)</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">Before the ride, the crew votes on who gets to be pilot. The pilot must narrate the mission in character ("engaging hyperdrive…") — no laughing allowed.</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Continue to Mission 4 — Star Tours</button>
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Skip Star Tours — head to Magic Kingdom</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- M4 Star Tours -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-hs"></div>
+            <div class="card-header">
+              <div class="card-emoji">🌍</div>
+              <div class="card-meta">
+                <span class="card-tag tag-hs">Mission 4</span>
+                <div class="card-title">The Jump to Lightspeed</div>
+                <div class="card-location">📍 Star Tours — Echo Lake</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">In the Star Tours queue, find at least 3 items from other non-Star Wars movies or shows hiding in the "intergalactic baggage" area. Each person finds one — go.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">Star Tours has over 70 possible combinations of scenes — it's almost impossible to ride it twice and get the exact same experience.</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">Compare your planet destination after the ride. Whoever got the rarest destination wins a bonus point. Dagobah counts double.</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> HS complete — travel to Magic Kingdom</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MK MISSIONS -->
+      <div id="park-mk" style="display:none">
+        <div class="section-label">Magic Kingdom</div>
+        <div class="cards-grid">
+
+          <!-- M5 Big Thunder -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-mk"></div>
+            <div class="card-header">
+              <div class="card-emoji">⛏️</div>
+              <div class="card-meta">
+                <span class="card-tag tag-mk">Mission 5</span>
+                <div class="card-title">The Wildest Mine in the West</div>
+                <div class="card-location">📍 Big Thunder Mountain — Frontierland</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">The queue is full of real mining equipment from actual gold rush sites. Find the old goat somewhere in or around the ride area. (He's there — legend says he's been eating dynamite for decades.)</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">Big Thunder Mountain is built on the same land as the original 1950s Mine Train ride. Some of the original structures are still in the ground beneath it.</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">Ride it with your eyes closed for the entire first drop. On your honor system — the Captain is watching.</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Claim Snack Stop II at Casey's Corner</button>
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Head to Seven Dwarfs Mine Train</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- M6 Seven Dwarfs -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-mk"></div>
+            <div class="card-header">
+              <div class="card-emoji">💎</div>
+              <div class="card-meta">
+                <span class="card-tag tag-mk">Mission 6</span>
+                <div class="card-title">The Gem Hunt</div>
+                <div class="card-location">📍 Seven Dwarfs Mine Train — Fantasyland</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">In the interactive queue, you can sort gems just like the dwarfs. Each person must sort one batch. The crew votes on who did it the fastest. Captain's call breaks ties.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">The mine train cars swing independently — that's why it feels so different from regular coasters. You can actually see them swaying as the train goes around bends.</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Optional Challenge</div>
+                <div class="mission-text">Assign each person a dwarf name for the rest of the day. The Captain assigns them. They have to use the name at least once at the next stop.</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress()"><span class="arrow">→</span> Head to Space Mountain — final mission</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- M7 Space Mountain -->
+          <div class="mission-card" onclick="toggleCard(this)">
+            <div class="card-stripe stripe-mk"></div>
+            <div class="card-header">
+              <div class="card-emoji">🌌</div>
+              <div class="card-meta">
+                <span class="card-tag tag-mk">Mission 7 — FINAL</span>
+                <div class="card-title">The Void</div>
+                <div class="card-location">📍 Space Mountain — Tomorrowland</div>
+              </div>
+              <div class="card-lock">🔒</div>
+            </div>
+            <div class="card-body">
+              <div class="card-divider"></div>
+              <div class="mission-section">
+                <div class="mission-label">🔍 Scavenger Objective</div>
+                <div class="mission-text">Before entering: find the retro "rocket" mural or futuristic signage near the Tomorrowland entrance that was designed in the 1970s. It imagines what the year 2000 would look like. Snap it — the future that never happened.</div>
+              </div>
+              <div class="mission-section">
+                <div class="mission-label">🎯 Hidden Detail</div>
+                <div class="mission-text">Space Mountain's highest point is only 28 mph — slower than most roller coasters. The darkness makes it feel three times faster. It's almost entirely psychological.</div>
+              </div>
+              <div class="challenge-box">
+                <div class="mission-label">⚡ Final Challenge</div>
+                <div class="mission-text">After the ride, everyone writes down the one word that describes the whole day. The Captain reads them aloud. No repeats allowed.</div>
+              </div>
+              <div class="branch-buttons">
+                <button class="branch-btn" onclick="markProgress(); celebrateQuest()"><span class="arrow">→</span> 🎉 Complete the Quest — claim the final snack</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- SNACKS PANEL -->
+    <div id="tab-snacks" class="panel">
+      <div class="section-label">Snack Checkpoints</div>
+      <div class="cards-grid">
+
+        <div class="mission-card" onclick="toggleCard(this)">
+          <div class="card-stripe stripe-snack"></div>
+          <div class="card-header">
+            <div class="card-emoji">🍟</div>
+            <div class="card-meta">
+              <span class="card-tag tag-snack">Snack Stop I</span>
+              <div class="card-title">Woody's Lunch Box Tots</div>
+              <div class="card-location">📍 Toy Story Land — Hollywood Studios</div>
+            </div>
+            <div class="card-lock">🔒</div>
+          </div>
+          <div class="card-body">
+            <div class="card-divider"></div>
+            <div class="mission-section">
+              <div class="mission-label">🍴 The Order</div>
+              <div class="mission-text">Totchos (tater tots with toppings) — the signature move. Get them with queso and bacon. Split them crew-style. These are non-negotiable on any quest.</div>
+            </div>
+            <div class="mission-section">
+              <div class="mission-label">🔍 Snack Scavenger</div>
+              <div class="mission-text">The lunch box is actually built to look like Andy's real lunchbox from the movies. Find the vintage-style logo on it before you order.</div>
+            </div>
+            <div class="challenge-box">
+              <div class="mission-label">⚡ Table Challenge</div>
+              <div class="mission-text">Everyone gets 60 seconds to say their highlight of Hollywood Studios so far. Captain goes last. No repeating someone else's answer.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mission-card" onclick="toggleCard(this)">
+          <div class="card-stripe stripe-snack"></div>
+          <div class="card-header">
+            <div class="card-emoji">🥚</div>
+            <div class="card-meta">
+              <span class="card-tag tag-snack">Bonus Snack</span>
+              <div class="card-title">Adventureland Spring Rolls</div>
+              <div class="card-location">📍 Adventureland — Magic Kingdom</div>
+            </div>
+            <div class="card-lock">🔒</div>
+          </div>
+          <div class="card-body">
+            <div class="card-divider"></div>
+            <div class="mission-section">
+              <div class="mission-label">🍴 The Order</div>
+              <div class="mission-text">The cheeseburger spring rolls are the move here — crispy, unexpected, and kind of perfect between rides. Get them on the way to or from Frontierland.</div>
+            </div>
+            <div class="mission-section">
+              <div class="mission-label">🔍 Snack Scavenger</div>
+              <div class="mission-text">While in Adventureland, find the hidden "waterfall" sound effect playing in an area with no water in sight. Listen for it near the bridge area.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mission-card" onclick="toggleCard(this)">
+          <div class="card-stripe stripe-snack"></div>
+          <div class="card-header">
+            <div class="card-emoji">🌭</div>
+            <div class="card-meta">
+              <span class="card-tag tag-snack">Snack Stop II</span>
+              <div class="card-title">Casey's Corner</div>
+              <div class="card-location">📍 Main Street U.S.A. — Magic Kingdom</div>
+            </div>
+            <div class="card-lock">🔒</div>
+          </div>
+          <div class="card-body">
+            <div class="card-divider"></div>
+            <div class="mission-section">
+              <div class="mission-label">🍴 The Order</div>
+              <div class="mission-text">Corn dog nuggets or a classic all-beef hot dog. The corn dog nuggets are the secret weapon — get them with the dipping sauce. The piano player outside sets the vibe perfectly.</div>
+            </div>
+            <div class="mission-section">
+              <div class="mission-label">🔍 Snack Scavenger</div>
+              <div class="mission-text">Casey's is named after the poem "Casey at the Bat." Find a baseball reference somewhere in or around the restaurant before you order. It's on the wall.</div>
+            </div>
+            <div class="challenge-box">
+              <div class="mission-label">⚡ Table Challenge</div>
+              <div class="mission-text">Captain's choice: everyone ranks the rides so far in order. Most dramatic disagreement wins a bonus quest point.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mission-card" onclick="toggleCard(this)">
+          <div class="card-stripe stripe-snack"></div>
+          <div class="card-header">
+            <div class="card-emoji">🍦</div>
+            <div class="card-meta">
+              <span class="card-tag tag-snack">Final Snack Stop</span>
+              <div class="card-title">Auntie Gravity's Ice Cream Floats</div>
+              <div class="card-location">📍 Tomorrowland — Magic Kingdom</div>
+            </div>
+            <div class="card-lock">🔒</div>
+          </div>
+          <div class="card-body">
+            <div class="card-divider"></div>
+            <div class="mission-section">
+              <div class="mission-label">🍴 The Order</div>
+              <div class="mission-text">The strawberry or Minute Maid orange float. Cold, sweet, and the perfect reward after completing all 7 missions. This is your Victory Float — earned, not just ordered.</div>
+            </div>
+            <div class="mission-section">
+              <div class="mission-label">🎉 Quest Completion Ritual</div>
+              <div class="mission-text">Everyone raises their float. The Captain makes a toast. No speech required — just raise it and drink. Quest complete.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECRETS PANEL -->
+    <div id="tab-secrets" class="panel">
+      <div class="section-label">Hidden Disney Secrets</div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🎬 Hollywood Studios</div>
+        <h4>The Twilight Zone is Real (Sort Of)</h4>
+        <p>The Tower of Terror lobby's furniture, books, and decor were all styled to look like they were frozen in 1939 — the year of the fictional "accident." The cast members are trained to act as if the hotel never closed. You can ask them questions about it.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🎬 Hollywood Studios — Galaxy's Edge</div>
+        <h4>The Whole Land Has a Fake Language</h4>
+        <p>The signs, menus, and graffiti in Galaxy's Edge are written in Aurebesh — the actual Star Wars alphabet. You can download a translator and decode the walls. Some signs are inside jokes written by the Imagineers.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🎬 Toy Story Land</div>
+        <h4>You Are the Size of a Toy</h4>
+        <p>Every single prop in Toy Story Land was scaled up as if you're the size of a Buzz Lightyear action figure in Andy's backyard. The blades of grass are oversized. The toys are at normal toy scale. You are the small thing in the world.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🏰 Magic Kingdom</div>
+        <h4>The Whole Park is Built on a Second Floor</h4>
+        <p>Magic Kingdom sits on top of a network of underground tunnels called "utilidors." Cast members, food deliveries, and trash all travel underground so you never see the backstage world. The park's ground level is actually the second story of the building.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🏰 Magic Kingdom — Main Street</div>
+        <h4>Every Window Has a Name (and a Backstory)</h4>
+        <p>The upper-floor windows on Main Street are credits for real Imagineers who built Disney. Each "business" listed — dentist, architect, dance studio — is a nod to their actual role. Walt Disney's window is above the bakery, centered at the end of the street.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🏰 Tomorrowland</div>
+        <h4>Space Mountain Goes 28 mph (Max)</h4>
+        <p>The dark, the sound design, and the G-forces make Space Mountain feel like 60 mph. It's a fully engineered psychological trick. The tallest point is only 180 feet. Rollercoasters twice as slow in full light feel half as intense.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🏰 Fantasyland</div>
+        <h4>The Carousel Horses Are All Different</h4>
+        <p>Prince Charming Regal Carrousel has 90 horses, and none of them are identical. Each one is hand-painted. One white horse with a golden ribbon is reserved — it's Cinderella's horse, and you can always tell it apart.</p>
+      </div>
+
+      <div class="bonus-card">
+        <div class="bonus-location">🌍 Anywhere in the Park</div>
+        <h4>The Smell is on Purpose</h4>
+        <p>Disney pumps artificial scents through vents throughout the parks. The vanilla smell on Main Street, the sulfur near the volcano in Animal Kingdom, the ocean air near Pirates of the Caribbean — all engineered. It's called "smellitizers."</p>
+      </div>
+
+    </div>
+
+  </div><!-- end mainApp -->
+</div>
 
 <script>
-const DATA = {
-  missions: [
-    { id:"hs_tower", park:"HS", name:"🏨 Lost Hollywood Hotel",
-      where:"Tower of Terror (Sunset Boulevard)", ride:"Tower of Terror",
-      clue:"Find the abandoned hotel where elevators still move.",
-      find:"In the lobby, spot a suitcase with old international travel stickers (snap a quick photo).",
-      challenge:"Everyone guesses: big drop first, or later?",
-      unlocks:["hs_toy","hs_falcon","snack_totchos"], tags:["Thrill","Scavenger find"]
-    },
-    { id:"hs_toy", park:"HS", name:"🧸 Andy’s Backyard Hunt",
-      where:"Toy Story Land", ride:"Slinky Dog Dash (or explore if wait is huge)",
-      clue:"Somewhere nearby, toys became enormous and humans became tiny.",
-      find:"Find 3 oversized toy objects being used as park “stuff” (bench/fence/sign).",
-      challenge:"Pick your favorite and name it like a museum artifact.",
-      unlocks:["hs_startours","snack_totchos","snack_galaxy"], tags:["Thrill","Nostalgia"]
-    },
-    { id:"hs_falcon", park:"HS", name:"🚀 Smuggler’s Ship",
-      where:"Galaxy’s Edge – Millennium Falcon courtyard", ride:"Smugglers Run (optional depending on wait)",
-      clue:"A famous smuggling ship from a galaxy far away waits for its crew.",
-      find:"Find visible battle scratches/burn marks on the Falcon’s exterior.",
-      challenge:"Listen for the engine rumble near the back of the ship.",
-      unlocks:["hs_startours","snack_galaxy","hop"], tags:["Big wow","Flexible"]
-    },
-    { id:"hs_startours", park:"HS", name:"🛰️ Randomized Flight",
-      where:"Star Tours area", ride:"Star Tours",
-      clue:"A flight you’ll almost never get the same way twice.",
-      find:"After riding, name ONE character/planet you saw that surprised you.",
-      challenge:"Vote: classic / chaotic / elite.",
-      unlocks:["snack_totchos","snack_galaxy","hop"], tags:["Fast","Great filler"]
-    },
+  let completedMissions = 0;
+  const totalMissions = 9;
 
-    { id:"mk_castle", park:"MK", name:"🏰 Castle Illusion",
-      where:"Cinderella Castle hub (outside + archway)", ride:"Explore + photos",
-      clue:"Find the castle that looks enormous but hides a trick.",
-      find:"Spot 2 places where features shrink near the top (forced perspective).",
-      challenge:"Captain picks the best photo spot for a quick group pic.",
-      unlocks:["mk_thunder","mk_space","snack_caseys","snack_spring"], tags:["Nostalgia","Reset mood"]
-    },
-    { id:"mk_thunder", park:"MK", name:"⛏️ Cursed Mine Run",
-      where:"Big Thunder Mountain", ride:"Big Thunder Mountain",
-      clue:"A runaway train roars through a mountain once owned by miners.",
-      find:"In the queue, find a mining object (tool/crate/prop) and take an “evidence” photo.",
-      challenge:"Predict: smooth ride or wild ride?",
-      unlocks:["mk_space","mk_dwarfs","snack_spring","snack_tots_mk"], tags:["Thrill","Queue scavenger"]
-    },
-    { id:"mk_space", park:"MK", name:"🌌 Space Launch",
-      where:"Space Mountain / Tomorrowland", ride:"Space Mountain",
-      clue:"Blast off from the mountain of the future.",
-      find:"Find one retro-futuristic design element nearby (sign/shape/architecture).",
-      challenge:"Guess: left track or right track feels faster?",
-      unlocks:["mk_dwarfs","snack_float","snack_caseys"], tags:["Thrill","Classic"]
-    },
-    { id:"mk_dwarfs", park:"MK", name:"💎 Mine Train Sway",
-      where:"Seven Dwarfs Mine Train", ride:"Seven Dwarfs Mine Train",
-      clue:"A mine cart ride that swings like a real cart.",
-      find:"Find one gem/mining detail in the queue that looks hand-crafted.",
-      challenge:"Everyone votes: cutest scene vs coolest scene.",
-      unlocks:["snack_spring","snack_caseys","snack_float","snack_tots_mk"], tags:["Popular","Scavenger"]
-    }
-  ],
-  checkpoints: [
-    { id:"snack_totchos", park:"HS", name:"🥔 Checkpoint: Totchos",
-      where:"Woody’s Lunch Box", ride:"Snack + bathroom reset",
-      clue:"Refuel like an explorer.",
-      find:"Find a table that looks like it’s made from lunch packaging/toy materials.",
-      challenge:"Captain picks: totchos vs grilled cheese.",
-      unlocks:["hs_toy","hs_falcon","hs_startours","hop"], tags:["Food","Bathroom reset"]
-    },
-    { id:"snack_galaxy", park:"HS", name:"🌌 Checkpoint: Galaxy Snacks",
-      where:"Galaxy’s Edge (Ronto Roasters area)", ride:"Snack + bathroom reset",
-      clue:"Taste something from off-world.",
-      find:"Find 2 different alien scripts on walls/crates.",
-      challenge:"Captain chooses: Ronto Wrap or Blue Milk.",
-      unlocks:["hs_falcon","hs_startours","hop"], tags:["Food","Bathroom reset"]
-    },
-    { id:"snack_spring", park:"MK", name:"🌯 Checkpoint: Spring Rolls",
-      where:"Adventureland Spring Roll Cart", ride:"Snack + bathroom reset",
-      clue:"Unlock the famous hidden snack.",
-      find:"Find 1 Adventureland carving/mask detail nearby.",
-      challenge:"Captain decides: one roll now or save for later.",
-      unlocks:["mk_thunder","mk_space","mk_dwarfs","snack_caseys"], tags:["Food","Bathroom reset"]
-    },
-    { id:"snack_caseys", park:"MK", name:"🌭 Checkpoint: Casey’s Corner",
-      where:"Casey’s Corner (Main Street)", ride:"Snack + bathroom reset",
-      clue:"Classic park comfort food.",
-      find:"Find the baseball theme detail near the seating/signage.",
-      challenge:"Listen for organ music—first person to notice wins a point.",
-      unlocks:["mk_castle","mk_space","mk_thunder","snack_float"], tags:["Food","Bathroom reset"]
-    },
-    { id:"snack_tots_mk", park:"MK", name:"🥔 Checkpoint: Tater Tots",
-      where:"Friar’s Nook", ride:"Snack + bathroom reset",
-      clue:"Legendary tots, quick and satisfying.",
-      find:"Find 2 medieval-style details nearby (shield/crest/stonework).",
-      challenge:"Captain picks: plain vs loaded tots.",
-      unlocks:["mk_space","mk_dwarfs","snack_float"], tags:["Food","Bathroom reset"]
-    },
-    { id:"snack_float", park:"MK", name:"🍦 Checkpoint: Ice Cream Float",
-      where:"Auntie Gravity’s (Tomorrowland)", ride:"Snack + bathroom reset",
-      clue:"Retro future treat.",
-      find:"Find 1 retro-futuristic graphic/sign in Tomorrowland.",
-      challenge:"Captain picks the float style.",
-      unlocks:["mk_space","mk_dwarfs","snack_caseys"], tags:["Food","Bathroom reset"]
-    }
-  ],
-  hop: { id:"hop", park:"HOP", name:"🚝 Park Hop: Level 2 Unlocks",
-    where:"Travel to Magic Kingdom", ride:"Regroup + bathroom reset",
-    clue:"Level One complete—older secrets await.",
-    find:"Everyone shares 1 favorite discovery from Hollywood Studios.",
-    challenge:"Captain chooses the first MK mission path.",
-    unlocks:["mk_castle","mk_thunder","mk_space","snack_spring","snack_caseys"], tags:["Regroup","Reset"]
-  }
-};
+  // iOS Safari fix: attach touch+click listeners to all mission cards after DOM loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mission cards
+    document.querySelectorAll('.mission-card').forEach(function(card) {
+      card.addEventListener('click', function(e) {
+        // Don't toggle if they tapped a button inside
+        if (e.target.closest('.branch-btn')) return;
+        toggleCard(card);
+      });
+      // Also handle touchend for snappier iOS response
+      card.addEventListener('touchend', function(e) {
+        if (e.target.closest('.branch-btn')) return;
+        e.preventDefault();
+        toggleCard(card);
+      }, { passive: false });
+    });
 
-const ALL = new Map();
-for(const m of DATA.missions) ALL.set(m.id, m);
-for(const c of DATA.checkpoints) ALL.set(c.id, c);
-ALL.set(DATA.hop.id, DATA.hop);
+    // Map stops
+    document.querySelectorAll('.map-stop').forEach(function(stop) {
+      stop.addEventListener('click', function() { showTab('missions'); });
+      stop.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        showTab('missions');
+      }, { passive: false });
+    });
 
-const state = { captain:false, plan:[] };
-
-function save(){ localStorage.setItem("dbq_state_v2", JSON.stringify(state)); }
-function load(){
-  try{
-    const s = JSON.parse(localStorage.getItem("dbq_state_v2")||"null");
-    if(s && Array.isArray(s.plan)){ state.captain=!!s.captain; state.plan=s.plan; }
-  }catch(e){}
-}
-load();
-
-const el = (id)=>document.getElementById(id);
-
-function toast(msg){
-  const t = el("toast");
-  t.textContent = msg;
-  t.style.display = "block";
-  clearTimeout(toast._tm);
-  toast._tm = setTimeout(()=>t.style.display="none", 1400);
-}
-
-function setCaptain(on){
-  state.captain = on;
-  el("btnCaptain").textContent = `🔐 Captain mode: ${on ? "ON" : "OFF"}`;
-  el("lockBox").style.display = on ? "none" : "flex";
-  save();
-  renderPlan();
-}
-
-el("btnCaptain").addEventListener("click", ()=> setCaptain(!state.captain));
-el("btnCaptain2").addEventListener("click", ()=> setCaptain(true));
-
-el("btnReset").addEventListener("click", ()=>{
-  if(confirm("Reset the day (clears Today Plan)?")){
-    state.plan = [];
-    save();
-    renderPlan();
-    updateProgress();
-    toast("Reset ✅");
-  }
-});
-
-el("btnShare").addEventListener("click", async ()=>{
-  const link = window.location.href;
-  const msg = `🎂 Disney Birthday Quest Map
-Captain unlocks missions as we go
-${link}`;
-  try{ await navigator.clipboard.writeText(msg); toast("Share text copied ✅"); }
-  catch(e){ prompt("Copy this text:", msg); }
-});
-
-function addToPlan(id){
-  if(!ALL.has(id)) return;
-  state.plan.push({id, done:false, waitChoice:null});
-  save();
-  renderPlan();
-  updateProgress();
-  toast("Added to Today Plan ✅");
-  el("planList").scrollIntoView({behavior:"smooth", block:"start"});
-}
-
-function markDone(idx){
-  state.plan[idx].done = !state.plan[idx].done;
-  save(); renderPlan(); updateProgress();
-}
-
-function removeItem(idx){
-  state.plan.splice(idx,1);
-  save(); renderPlan(); updateProgress();
-}
-
-function setWaitChoice(idx, choice){
-  state.plan[idx].waitChoice = choice; // short|med|long
-  save();
-  renderPlan(); // stays on same card, shows next options
-  updateReco();
-}
-
-function chooseNext(idx, nextId){
-  state.plan[idx].done = true;
-  state.plan.push({id: nextId, done:false, waitChoice:null});
-  save();
-  renderPlan();
-  updateProgress();
-  toast("Next unlocked ✅");
-  setTimeout(()=>{
-    const cards = document.querySelectorAll("[data-plan-idx]");
-    const last = cards[cards.length-1];
-    if(last) last.scrollIntoView({behavior:"smooth", block:"center"});
-  }, 50);
-}
-
-function nodeCard(item){
-  const tags = (item.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("");
-  return `
-    <div class="node">
-      <h3>${item.name}</h3>
-      <div class="meta">
-        <span class="tag">${item.where}</span>
-        ${item.ride ? `<span class="tag">${item.ride}</span>`:""}
-      </div>
-      <p class="desc">${item.clue}</p>
-      <div class="btnrow">
-        <button class="btn small primary" data-add="${item.id}">Add to Today Plan</button>
-      </div>
-      <div class="meta" style="margin-top:10px">${tags}</div>
-    </div>
-  `;
-}
-
-function renderMap(){
-  el("mapHS").innerHTML = DATA.missions.filter(m=>m.park==="HS").map(nodeCard).join("");
-  el("mapMK").innerHTML = DATA.missions.filter(m=>m.park==="MK").map(nodeCard).join("");
-  el("mapSnacks").innerHTML = DATA.checkpoints.map(nodeCard).join("");
-  const hop = DATA.hop;
-  el("nodeHop").innerHTML = `
-    <h3>${hop.name}</h3>
-    <div class="meta">
-      <span class="tag">${hop.where}</span>
-      <span class="tag">${hop.ride}</span>
-    </div>
-    <p class="desc">${hop.clue}</p>
-    <div class="btnrow">
-      <button class="btn small primary" data-add="${hop.id}">Add to Today Plan</button>
-    </div>
-  `;
-}
-
-function planItemHTML(entry, idx){
-  const item = ALL.get(entry.id);
-  const doneClass = entry.done ? "done" : "";
-  const wait = entry.waitChoice;
-
-  let waitMsg = "";
-  if(wait === "short"){
-    waitMsg = `<div class="recBox"><strong>Short wait:</strong> Do it now. Then Captain chooses what unlocks next below.</div>`;
-  } else if(wait === "med"){
-    waitMsg = `<div class="recBox"><strong>Medium wait:</strong> Go now if it’s moving. If it feels stuck, do a quick Checkpoint first.</div>`;
-  } else if(wait === "long"){
-    const suggested = (item.unlocks||[]).find(x => x.startsWith("snack_")) || (item.park==="HS" ? "snack_totchos" : "snack_spring");
-    const sugItem = ALL.get(suggested);
-    waitMsg = `<div class="recBox"><strong>Long wait:</strong> Run a Checkpoint (bathroom + snack), then come back.</div>
-               <div class="btnrow" style="margin-top:8px">
-                 <button class="btn small warn" data-next="${idx}:${suggested}">Add suggested: ${sugItem ? sugItem.name : "Checkpoint"}</button>
-               </div>`;
-  }
-
-  const nextButtons = (item.unlocks||[]).map(nid=>{
-    const n = ALL.get(nid);
-    if(!n) return "";
-    return `<button class="btn small primary" data-next="${idx}:${nid}">${n.name}</button>`;
-  }).join("");
-
-  const details = state.captain
-    ? `<details><summary>Mission details (Captain)</summary>
-         <p><strong>Scavenger Find:</strong> ${item.find}</p>
-         <p><strong>Optional Challenge:</strong> ${item.challenge}</p>
-       </details>`
-    : `<details><summary>Clue</summary><p>${item.clue}</p><p><em>(Captain mode reveals scavenger details.)</em></p></details>`;
-
-  return `
-    <div class="planItem ${doneClass}" data-plan-idx="${idx}">
-      <div class="check" data-done="${idx}">${entry.done ? "✓" : ""}</div>
-      <div class="planMain">
-        <div class="pmTitle">
-          <strong>${item.name}</strong>
-          <span>${item.where}</span>
-        </div>
-        <div class="pmBody">${item.ride ? `🎢 ${item.ride}` : ""}</div>
-
-        <div class="btnrow" style="margin-top:8px">
-          <button class="btn small good" data-wait="${idx}:short">Wait is short</button>
-          <button class="btn small" data-wait="${idx}:med">Wait is medium</button>
-          <button class="btn small bad" data-wait="${idx}:long">Wait is long</button>
-          <button class="btn small" data-remove="${idx}">Remove</button>
-        </div>
-
-        ${waitMsg}
-        <div style="margin-top:10px">${details}</div>
-
-        <div class="divider" style="margin:10px 0"></div>
-        <div class="pill"><strong>What’s next?</strong> <span>Captain chooses</span></div>
-        <div class="btnrow" style="margin-top:8px">${nextButtons || `<span class="smallnote">No unlocks listed.</span>`}</div>
-      </div>
-    </div>
-  `;
-}
-
-function wirePlanEvents(){
-  document.querySelectorAll("[data-done]").forEach(btn=>{
-    btn.addEventListener("click", ()=> markDone(parseInt(btn.dataset.done,10)));
-  });
-  document.querySelectorAll("[data-remove]").forEach(btn=>{
-    btn.addEventListener("click", ()=> removeItem(parseInt(btn.dataset.remove,10)));
-  });
-  document.querySelectorAll("[data-wait]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const [idx, choice] = btn.dataset.wait.split(":");
-      setWaitChoice(parseInt(idx,10), choice);
+    // Branch buttons — prevent the card from also toggling
+    document.querySelectorAll('.branch-btn').forEach(function(btn) {
+      btn.addEventListener('touchend', function(e) {
+        e.stopPropagation();
+      }, { passive: true });
     });
   });
-  document.querySelectorAll("[data-next]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const [idx, nextId] = btn.dataset.next.split(":");
-      chooseNext(parseInt(idx,10), nextId);
-    });
-  });
-}
 
-function renderPlan(){
-  el("btnCaptain").textContent = `🔐 Captain mode: ${state.captain ? "ON" : "OFF"}`;
-  el("lockBox").style.display = state.captain ? "none" : "flex";
-
-  if(state.plan.length === 0){
-    el("planList").innerHTML = `<div class="smallnote">Tap a mission on the left to add it here.</div>`;
-  }else{
-    el("planList").innerHTML = state.plan.map(planItemHTML).join("");
+  function beginQuest() {
+    document.getElementById('introScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    window.scrollTo(0, 0);
   }
-  wirePlanEvents();
-  updateReco();
-}
 
-function updateProgress(){
-  const total = state.plan.length || 1;
-  const done = state.plan.filter(x=>x.done).length;
-  const pct = Math.round((done/total)*100);
-  el("bar").style.width = pct + "%";
-  el("progText").textContent = `${pct}% complete`;
-}
-
-function renderWaitInputs(){
-  const rides = [
-    ["Tower of Terror","hs_tower"],
-    ["Slinky Dog","hs_toy"],
-    ["Falcon","hs_falcon"],
-    ["Star Tours","hs_startours"],
-    ["Big Thunder","mk_thunder"],
-    ["Space Mtn","mk_space"],
-    ["Mine Train","mk_dwarfs"],
-  ];
-  el("waitInputs").innerHTML = rides.map(([labelTxt,id])=>`
-    <div>
-      <label>${labelTxt} wait (min)</label>
-      <input type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 45" data-w="${id}">
-    </div>
-  `).join("");
-
-  document.querySelectorAll("[data-w]").forEach(inp=>{
-    inp.addEventListener("input", ()=> updateReco());
-  });
-}
-
-function updateReco(){
-  const entries = [];
-  document.querySelectorAll("[data-w]").forEach(inp=>{
-    const v = parseInt(inp.value,10);
-    if(!isNaN(v)) entries.push([inp.dataset.w, v]);
-  });
-  if(entries.length === 0){
-    el("reco").innerHTML = "Tip: enter current waits. If a key ride is long, do a Checkpoint mission, then try again.";
-    return;
+  function showTab(tab) {
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.getElementById('tab-' + tab).classList.add('active');
+    var tabs = ['map', 'missions', 'snacks', 'secrets'];
+    var idx = tabs.indexOf(tab);
+    if (idx >= 0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+    window.scrollTo(0, 0);
   }
-  entries.sort((a,b)=>a[1]-b[1]);
-  const [bestId, bestWait] = entries[0];
-  const best = ALL.get(bestId);
-  const longOnes = entries.filter(x=>x[1] >= 70);
-  const longTxt = longOnes.length ? ` Also: ${longOnes.map(([id,w])=>`${(ALL.get(id)?.name || id)} (${w}m)`).join(", ")} is long → do a checkpoint first.` : "";
-  el("reco").innerHTML = `<strong>Suggestion:</strong> If you want a ride now, ${best?.name || "pick the shortest wait"} looks best at ~${bestWait} min.${longTxt}`;
-}
 
-// Map click handler
-document.body.addEventListener("click", (e)=>{
-  const add = e.target.closest("[data-add]");
-  if(add){ addToPlan(add.dataset.add); return; }
-});
+  function showPark(park, el) {
+    document.getElementById('park-hs').style.display = park === 'hs' ? 'block' : 'none';
+    document.getElementById('park-mk').style.display = park === 'mk' ? 'block' : 'none';
+    document.querySelectorAll('.park-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+  }
 
-renderMap();
-renderWaitInputs();
-renderPlan();
-updateProgress();
-setCaptain(state.captain);
+  function toggleCard(card) {
+    var body = card.querySelector('.card-body');
+    var lock = card.querySelector('.card-lock');
+    var isOpen = body.classList.contains('open');
+    // Close all cards first
+    document.querySelectorAll('.card-body').forEach(function(b) { b.classList.remove('open'); });
+    if (!isOpen) {
+      body.classList.add('open');
+      if (lock && lock.textContent === '🔒') lock.textContent = '🔓';
+      // Scroll card into view on iPhone
+      setTimeout(function() {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  }
+
+  function markProgress() {
+    completedMissions = Math.min(completedMissions + 1, totalMissions);
+    var pct = (completedMissions / totalMissions) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = completedMissions + ' / ' + totalMissions + ' Missions';
+  }
+
+  function celebrateQuest() {
+    markProgress();
+    setTimeout(function() {
+      alert('🎉👑 QUEST COMPLETE! The Birthday Captain has conquered both kingdoms. Victory float earned. 🍦⚜️');
+    }, 300);
+  }
 </script>
 </body>
 </html>
